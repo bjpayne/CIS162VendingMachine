@@ -29,6 +29,8 @@ public class VendingMachineTest {
 
         onlyDollarBillsShouldBeAccepted(vendingMachine1);
 
+        onlyNickelsDimesAndQuartersAreAccepted(vendingMachine1);
+
         System.out.println("Error count: " + errors);
     }
 
@@ -256,6 +258,26 @@ public class VendingMachineTest {
             testPass = false;
 
             System.out.println("ERROR: Only $1 bills should be accepted");
+        }
+
+        testEnd(testPass);
+    }
+
+    private static void onlyNickelsDimesAndQuartersAreAccepted(
+        VendingMachine vendingMachine
+    ) {
+        boolean testPass = true;
+
+        testStart();
+
+        testActions("insert $.01");
+
+        if (! assertCredit(vendingMachine, 0)) {
+            testPass = false;
+
+            System.out.println("ERROR: Only nickels, dimes, and quarters " +
+                "should be accepted"
+            );
         }
 
         testEnd(testPass);
