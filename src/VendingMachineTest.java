@@ -1,6 +1,5 @@
 /*****************************************************************
- Vending Machine class that simulates the IO of the machines on
- the GVSU campus.
+ Vending Machine class tests
 
  @author Ben Payne
  @version 2017.02.12
@@ -8,12 +7,18 @@
 public class VendingMachineTest {
     private static int errors = 0;
 
-    public static void main(String args[]){
+    public static void main(String args[]) {
         // Get two instances of the the VendingMachine class.
         // The first using the default constructor, the second
         // using the overloaded constructor with a set inventory.
-        VendingMachine vendingMachine1 = new VendingMachine();
-        VendingMachine vendingMachine2 = new VendingMachine(20);
+        VendingMachine vendingMachine1 = new VendingMachine(new Coin());
+        VendingMachine vendingMachine2 = new VendingMachine(new Coin(), 20);
+
+        vendingMachine1.displayStatus();
+        vendingMachine2.displayStatus();
+
+        vendingMachine1.restock(10);
+        vendingMachine2.restock(20);
 
         initialInventoryShouldBeSet(vendingMachine1, vendingMachine2);
 
@@ -25,6 +30,8 @@ public class VendingMachineTest {
 
         itemShouldDispenseIfSufficientCredit(vendingMachine1);
 
+        itemShouldNotDispenseIfInsufficientInventory(vendingMachine1);
+
         additionalFundsShouldNotBeAppliedToCredit(vendingMachine1);
 
         onlyDollarBillsShouldBeAccepted(vendingMachine1);
@@ -33,6 +40,7 @@ public class VendingMachineTest {
 
         System.out.println("Error count: " + errors);
     }
+
 
     /******************************************************************
      Test that the inventory in each machine is properly set, both internally
@@ -61,7 +69,7 @@ public class VendingMachineTest {
             errors++;
         }
 
-        if (! assertInventory(vendingMachine2, 20)) {
+        if (!assertInventory(vendingMachine2, 20)) {
             System.out.println("ERROR! Inventory should be 10");
 
             testPass = false;
@@ -83,7 +91,7 @@ public class VendingMachineTest {
     /*****************************************************************
      Test the amount inserted in change and the resulting credit for
      each machine
-    *****************************************************************/
+     *****************************************************************/
     private static void changeInsertedShouldMatchCredit(
         VendingMachine vendingMachine
     ) {
@@ -95,7 +103,7 @@ public class VendingMachineTest {
 
         vendingMachine.insertCoin(25).insertCoin(25);
 
-        if (! assertCredit(vendingMachine, 50)) {
+        if (!assertCredit(vendingMachine, 50)) {
             System.out.println("ERROR! Credit should be 50");
 
             testPass = false;
@@ -111,7 +119,7 @@ public class VendingMachineTest {
     /*****************************************************************
      Test the amount inserted in dollars and resulting credit
      for each machine
-    *****************************************************************/
+     *****************************************************************/
     private static void dollarsInsertedShouldMatchCredit(
         VendingMachine vendingMachine
     ) {
@@ -123,7 +131,7 @@ public class VendingMachineTest {
 
         vendingMachine.insertDollar(1).insertDollar(1);
 
-        if (! assertCredit(vendingMachine, 100)) {
+        if (!assertCredit(vendingMachine, 100)) {
             System.out.println(
                 "ERROR! Credit should be $1.00 after inserting a dollar."
             );
@@ -141,7 +149,7 @@ public class VendingMachineTest {
     /*****************************************************************
      Test that a item will not be dispensed if insufficient funds are
      provided
-    *****************************************************************/
+     *****************************************************************/
     private static void itemShouldNotDispenseIfInsufficientCredit(
         VendingMachine vendingMachine
     ) {
@@ -153,9 +161,12 @@ public class VendingMachineTest {
             "insert $1.00 | insert $0.05 | make selection | cancel sale"
         );
 
+        vendingMachine.setCreditBalance(0);
+        vendingMachine.setInventory(10);
+
         vendingMachine.insertDollar(1).insertCoin(5).makeSelection();
 
-        if(! assertInventory(vendingMachine, 10)) {
+        if (! assertInventory(vendingMachine, 10)) {
             System.out.println("Error: Item should not have been dispensed.");
 
             testPass = false;
@@ -171,7 +182,7 @@ public class VendingMachineTest {
     /*****************************************************************
      Test that a item will dispensed if sufficient funds are
      provided
-    *****************************************************************/
+     *****************************************************************/
     private static void itemShouldDispenseIfSufficientCredit(
         VendingMachine vendingMachine
     ) {
@@ -189,8 +200,52 @@ public class VendingMachineTest {
             .insertCoin(25)
             .makeSelection();
 
-        if(! assertInventory(vendingMachine, 9)) {
+        if (!assertInventory(vendingMachine, 9)) {
             System.out.println("Error: Item should have been dispensed.");
+
+            testPass = false;
+
+            errors++;
+        }
+
+        if (!assertCredit(vendingMachine, 0)) {
+            System.out.println("Error: Credit should be 0");
+
+            testPass = false;
+
+            errors++;
+        }
+
+        testEnd(testPass);
+    }
+
+    /*****************************************************************
+     Test that an item will not dispense if there is insufficient
+     inventory
+     *****************************************************************/
+    private static void itemShouldNotDispenseIfInsufficientInventory(
+        VendingMachine vendingMachine
+    ) {
+        boolean testPass = true;
+
+        testStart();
+
+        int initialInventory = vendingMachine.getInventory();
+
+        vendingMachine.setInventory(0);
+
+        testActions(
+            "insert $1.00 | insert $0.25 | insert $0.25 | make selection"
+        );
+
+        vendingMachine
+            .insertDollar(1)
+            .insertCoin(25)
+            .insertCoin(25)
+            .makeSelection();
+
+        if (! assertInventory(vendingMachine, 0)) {
+            System.out.println("Error: Inventory should be 0.");
 
             testPass = false;
 
@@ -206,12 +261,14 @@ public class VendingMachineTest {
         }
 
         testEnd(testPass);
+
+        vendingMachine.restock(initialInventory);
     }
 
     /*****************************************************************
      Test that additional funds are returned to the customer once
      enough credit has been established
-    *****************************************************************/
+     *****************************************************************/
     private static void additionalFundsShouldNotBeAppliedToCredit(
         VendingMachine vendingMachine
     ) {
@@ -230,7 +287,7 @@ public class VendingMachineTest {
             .insertCoin(25)
             .insertCoin(25);
 
-        if (! assertCredit(vendingMachine, 150)) {
+        if (!assertCredit(vendingMachine, 150)) {
             System.out.println("Error: Credit should not exceed price.");
 
             testPass = false;
@@ -254,7 +311,7 @@ public class VendingMachineTest {
 
         vendingMachine.insertDollar(5);
 
-        if (! assertCredit(vendingMachine, 0)) {
+        if (!assertCredit(vendingMachine, 0)) {
             testPass = false;
 
             System.out.println("ERROR: Only $1 bills should be accepted");
@@ -270,7 +327,9 @@ public class VendingMachineTest {
 
         testStart();
 
-        testActions("insert $.01");
+        testActions("insert coin 20 | insert coin -10 | insert dollar 2");
+
+        vendingMachine.insertCoin(20).insertCoin(-10).insertDollar(2);
 
         if (! assertCredit(vendingMachine, 0)) {
             testPass = false;
@@ -306,7 +365,7 @@ public class VendingMachineTest {
     private static void testEnd(boolean result) {
         String test = getCurrentMethod();
 
-        System.out.print("Test " + test + ": " );
+        System.out.print("Test " + test + ": ");
         System.out.print((result) ? "Passed" : "Failed");
         System.out.print(System.lineSeparator());
         System.out.println("Test " + test + ": End");

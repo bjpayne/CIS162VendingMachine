@@ -1,5 +1,4 @@
 import java.text.NumberFormat;
-import java.util.*;
 
 /*****************************************************************
  Vending Machine class that simulates the IO of the machines on
@@ -15,20 +14,20 @@ class VendingMachine {
 
     private int totalSales;
 
-    private static final Set<Integer> COINS_ACCEPTED = new HashSet<>(
-        Arrays.asList(new Integer[]{5, 10, 25, 100})
-    );
+    private CoinInterface coin;
 
     /*****************************************************************
      Constructor initializes a new VendingMachine object with
-     default property.
+     default property values.
      *****************************************************************/
-    public VendingMachine() {
+    public VendingMachine(final CoinInterface coin) {
         this.creditBalance = 0;
 
         this.totalSales = 0;
 
         this.numberOfBottles = 10;
+
+        this.coin = coin;
     }
 
     /*****************************************************************
@@ -36,8 +35,10 @@ class VendingMachine {
      default properties except for the the supplied units.
      @param units the number of bottles to insert
      *****************************************************************/
-    public VendingMachine(final int units) {
+    public VendingMachine(final CoinInterface coin, final int units) {
         this.numberOfBottles = units;
+
+        this.coin = coin;
     }
 
     /*****************************************************************
@@ -86,20 +87,20 @@ class VendingMachine {
         this.displayGreeting();
     }
 
-
     /*****************************************************************
      Insert a coin and display the appropriate message.
-     @param amount the coins values
+     @param coin the coins values
      @return VendingMachine allow method chaining for a fluent API
      *****************************************************************/
-    public VendingMachine insertCoin(final int amount) {
+    public VendingMachine insertCoin(final int coin) {
         if (this.numberOfBottles == 0) {
             this.displayGreeting();
 
             return this;
         }
 
-        if (! COINS_ACCEPTED.contains(amount)) {
+        // Check that the inserted coin is an acceptable amount
+        if (! this.coin.validCoin(coin)) {
             System.out.println(
                 "Invalid coin." + System.lineSeparator() + "Please try again!"
             );
@@ -111,17 +112,23 @@ class VendingMachine {
             System.out.println(
                 "Please..." + System.lineSeparator() + "Make a selection"
             );
-        } else if (this.getCredit() < this.getPrice()) {
-            this.addCredit(amount);
+
+            return this;
+        }
+
+        if (this.getCredit() < this.getPrice()) {
+            this.addCredit(coin);
 
             System.out.println(
                 "Credit: " + this.formatDollarAmount(this.getCredit()) +
                 System.lineSeparator() +
                 "Price: " + this.formatDollarAmount(this.getPrice())
             );
-        } else {
-            System.out.println("Please try again.");
+
+            return this;
         }
+
+        System.out.println("Please try again.");
 
         return this;
     }
@@ -161,6 +168,10 @@ class VendingMachine {
         this.dispense();
     }
 
+    /*****************************************************************
+     Dispense the drink and update the object inventory and credit
+     balance.
+     *****************************************************************/
     private void dispense() {
         this.numberOfBottles = this.numberOfBottles - 1;
 
@@ -278,6 +289,9 @@ class VendingMachine {
         }
     }
 
+    /*****************************************************************
+     Get the objects product name
+     *****************************************************************/
     public String getProduct() {
         return "Pepsi";
     }
