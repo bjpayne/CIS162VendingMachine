@@ -297,6 +297,8 @@ class VendingMachine {
 
             this.makeSelection();
         }
+
+        displayStatus();
     }
 
     /*****************************************************************
