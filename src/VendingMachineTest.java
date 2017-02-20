@@ -12,7 +12,9 @@ public class VendingMachineTest {
         // The first using the default constructor, the second
         // using the overloaded constructor with a set inventory.
         VendingMachine vendingMachine1 = new VendingMachine(new Coin());
-        VendingMachine vendingMachine2 = new VendingMachine(new Coin(), 20);
+        VendingMachine vendingMachine2 = new VendingMachine(
+            new Coin(), 20
+        );
 
         vendingMachine1.displayStatus();
         vendingMachine2.displayStatus();
@@ -31,7 +33,7 @@ public class VendingMachineTest {
 
         additionalFundsShouldNotBeAppliedToCredit(vendingMachine1);
 
-        onlyDollarBillsShouldBeAccepted(vendingMachine1);
+        onlyOneDollarBillsShouldBeAccepted(vendingMachine1);
 
         onlyNickelsDimesAndQuartersAreAccepted(vendingMachine1);
 
@@ -293,7 +295,7 @@ public class VendingMachineTest {
         testEnd(testPass);
     }
 
-    private static void onlyDollarBillsShouldBeAccepted(
+    private static void onlyOneDollarBillsShouldBeAccepted(
         VendingMachine vendingMachine
     ) {
         boolean testPass = true;
@@ -370,9 +372,7 @@ public class VendingMachineTest {
     }
 
     private static void testStart() {
-        String test = getCurrentMethod();
-
-        System.out.println("Test " + test + ": Start");
+        System.out.println("Test " + getCurrentMethod() + ": Start");
     }
 
     private static void testEnd(boolean result) {
