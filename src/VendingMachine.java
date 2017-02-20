@@ -16,6 +16,8 @@ class VendingMachine {
 
     private CoinInterface coin;
 
+    private final int MAX_CREDIT = 200;
+
     /*****************************************************************
      Constructor initializes a new VendingMachine object with
      default property values.
@@ -77,7 +79,7 @@ class VendingMachine {
      Cancel the current sale and dispense the inserted coins.
      *****************************************************************/
     public void cancelSale() {
-        this.creditBalance = 0;
+        this.setCreditBalance(0);
 
         System.out.println("Sale cancelled");
         System.out.println("Credit: " +
@@ -108,15 +110,13 @@ class VendingMachine {
             return this;
         }
 
-        if (this.getCredit() == this.getPrice()) {
+        if (this.getCredit() == this.MAX_CREDIT) {
             System.out.println(
                 "Please..." + System.lineSeparator() + "Make a selection"
             );
 
             return this;
-        }
-
-        if (this.getCredit() < this.getPrice()) {
+        } else if (this.getCredit() <= this.MAX_CREDIT) {
             this.addCredit(coin);
 
             System.out.println(
@@ -175,11 +175,21 @@ class VendingMachine {
     private void dispense() {
         this.numberOfBottles = this.numberOfBottles - 1;
 
-        this.creditBalance = 0;
+        this.setTotalSales(this.getTotalSales() + this.getPrice());
+
+        int changeDue = this.getCredit() - this.getPrice();
+
+        this.setCreditBalance(0);
 
         System.out.println(
             "Dispensing your ice cold " + this.getProduct() + "!"
         );
+
+        if (changeDue > 0) {
+            System.out.println(
+                "Change due: " + this.formatDollarAmount(changeDue)
+            );
+        }
     }
 
     /*****************************************************************
@@ -204,7 +214,7 @@ class VendingMachine {
     public void addCredit(final int amount) {
         int newBalance = this.getCredit() + amount;
 
-        if (newBalance <= this.getPrice()) {
+        if (newBalance <= this.MAX_CREDIT) {
             this.setCreditBalance(newBalance);
         }
     }

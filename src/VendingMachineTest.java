@@ -17,9 +17,6 @@ public class VendingMachineTest {
         vendingMachine1.displayStatus();
         vendingMachine2.displayStatus();
 
-        vendingMachine1.restock(10);
-        vendingMachine2.restock(20);
-
         initialInventoryShouldBeSet(vendingMachine1, vendingMachine2);
 
         changeInsertedShouldMatchCredit(vendingMachine1);
@@ -38,9 +35,10 @@ public class VendingMachineTest {
 
         onlyNickelsDimesAndQuartersAreAccepted(vendingMachine1);
 
+        changeShouldBeDispensedOnceASelectionHasBeenMade(vendingMachine1);
+
         System.out.println("Error count: " + errors);
     }
-
 
     /******************************************************************
      Test that the inventory in each machine is properly set, both internally
@@ -89,8 +87,7 @@ public class VendingMachineTest {
     }
 
     /*****************************************************************
-     Test the amount inserted in change and the resulting credit for
-     each machine
+     Test the amount inserted in change and the resulting credit
      *****************************************************************/
     private static void changeInsertedShouldMatchCredit(
         VendingMachine vendingMachine
@@ -118,7 +115,6 @@ public class VendingMachineTest {
 
     /*****************************************************************
      Test the amount inserted in dollars and resulting credit
-     for each machine
      *****************************************************************/
     private static void dollarsInsertedShouldMatchCredit(
         VendingMachine vendingMachine
@@ -131,7 +127,7 @@ public class VendingMachineTest {
 
         vendingMachine.insertDollar(1).insertDollar(1);
 
-        if (!assertCredit(vendingMachine, 100)) {
+        if (! assertCredit(vendingMachine, 200)) {
             System.out.println(
                 "ERROR! Credit should be $1.00 after inserting a dollar."
             );
@@ -277,17 +273,14 @@ public class VendingMachineTest {
         testStart();
 
         testActions(
-            "insert $1.00 | insert $0.25 | insert $0.25 | " +
-                "insert $0.25 | cancel sale"
-        );
+            "insert $1.00 | insert $1.00 | insert $0.25 |");
 
         vendingMachine
             .insertDollar(1)
-            .insertCoin(25)
-            .insertCoin(25)
+            .insertDollar(1)
             .insertCoin(25);
 
-        if (!assertCredit(vendingMachine, 150)) {
+        if (!assertCredit(vendingMachine, 200)) {
             System.out.println("Error: Credit should not exceed price.");
 
             testPass = false;
@@ -337,6 +330,26 @@ public class VendingMachineTest {
             System.out.println("ERROR: Only nickels, dimes, and quarters " +
                 "should be accepted"
             );
+        }
+
+        testEnd(testPass);
+    }
+
+    private static void changeShouldBeDispensedOnceASelectionHasBeenMade(
+        VendingMachine vendingMachine
+    ) {
+        boolean testPass = true;
+
+        testStart();
+
+        testActions("insert $1.00 | insert $1.00 | make selection");
+
+        vendingMachine.insertDollar(1).insertDollar(1).makeSelection();
+
+        if (! assertCredit(vendingMachine, 0)) {
+            System.out.println("Change should dispense.");
+
+            testPass = false;
         }
 
         testEnd(testPass);
